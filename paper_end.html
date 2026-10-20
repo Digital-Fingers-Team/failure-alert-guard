@@ -1,0 +1,37 @@
+<h2>7. Limitations</h2>
+<ul>
+<li><b>Exchangeability is an assumption, not a fact.</b> The guarantee holds when new failing units resemble the calibration failures. Our cross-fleet and cross-manufacturer tests show exactly how far it breaks when they do not; in practice the threshold should be recalibrated whenever the fleet, its operating conditions or its sensors change, and the realised miss rate should be monitored.</li>
+<li><b>The guarantee is on average over the fleet.</b> It does not promise the same miss rate for every sub-group (for example, every drive model); our drive results show large differences between manufacturers. Calibrating separately per group (Mondrian calibration) fixes this but needs at least 1/α − 1 failures per group.</li>
+<li><b>Official C-MAPSS test truncation.</b> The official test engines stop at points chosen by NASA, not uniformly within the last <i>W</i> cycles as in our calibration. This mismatch is realistic and part of what H2 tests, but it means the in-fleet test is slightly harder than the theory assumes.</li>
+<li><b>Simulated versus real.</b> C-MAPSS is a simulation. The drive fleet is real, but hard drives are not jet engines, and SMART data are noisier and often silent before failure. Neither dataset includes maintenance actions, which in a real deployment would remove at-risk units from the data.</li>
+<li><b>One model family.</b> All results use gradient-boosted trees. The guard works with any score, and better models move the whole trade-off curve, but we did not test deep sequence models.</li>
+<li><b>Cost model.</b> We report misses and false alarms separately instead of combining them with assumed prices; the right α depends on the real cost of an in-service failure versus an inspection, which differs between industries.</li>
+</ul>
+
+<h2>8. Safety, ethics and research integrity</h2>
+<p>No equipment was damaged; all data are public (NASA open data [1, 2]; Backblaze drive stats, free to use with attribution [9]). The drive data contain serial numbers but no personal information. Numbers quoted from other work (Table 2, left columns) are labelled as such and were reproduced before being used. Hypotheses, settings and analysis code were frozen with SHA-256 hashes before the test data were evaluated, and every pre-registered result is reported, including those not supported. The pilot that touched two official test sets before freezing is disclosed in Section 4.5. The method supports, and does not replace, engineering judgement; it is not certified for aviation or other safety-critical use.</p>
+<h2>9. Conclusion</h2>
+<p>A low average error does not make a safe alarm. We reproduced a public C-MAPSS benchmark and then showed, in a pre-registered study on four simulated engine fleets and 343,944 real hard drives, that a simple conformal alert rule, the guard, delivers the miss rate it promises among failing machines. It uses far fewer false alarms than standard conformal intervals, it stays valid three months into the future on real drives, and it recovers after a fleet change with as few as 20 recorded failures. The same guarantee also tells operators the true price of safety, which on SMART data is high. Future work: per-group (Mondrian) calibration for drive models, online recalibration that detects fleet change from unlabelled data, and sensors richer than SMART.</p>
+<p class="small"><b>Reproducibility.</b> All code, the frozen <code>prereg.json</code> (hypotheses, settings and SHA-256 hashes of code and data), raw result files and figures are in the project repository; <code>git tag freeze</code> marks the commit at which the analysis was frozen. Running the three commands listed in <code>prereg.json</code> reproduces every number in this paper.</p>
+<p class="small"><b>Use of AI tools.</b> [Student to complete: describe how AI assistants were used, for example in coding, data processing and editing, and confirm that the student designed, ran, checked and can explain every part of the project.]</p>
+
+<h2>References</h2>
+<ol class="refs">
+<li>A. Saxena, K. Goebel, D. Simon, N. Eklund. Damage propagation modeling for aircraft engine run-to-failure simulation. <i>Proc. 1st Int. Conf. Prognostics and Health Management (PHM08)</i>, 2008.</li>
+<li>NASA Prognostics Center of Excellence. CMAPSS Jet Engine Simulated Data. NASA Open Data Portal, accessed 20 Oct 2026.</li>
+<li>Public GitHub repository "NASA C-MAPSS Remaining Useful Life Prediction" (FD001 results quoted in the original report; not peer-reviewed).</li>
+<li>J. Leukel, J. González, M. Riekert. Adoption of machine learning technology for failure prediction in industrial maintenance: a systematic review. <i>Journal of Manufacturing Systems</i> 61:87–96, 2021.</li>
+<li>A. N. Angelopoulos, S. Bates. Conformal prediction: a gentle introduction. <i>Foundations and Trends in Machine Learning</i> 16(4):494–591, 2023.</li>
+<li>V. Vovk, A. Gammerman, G. Shafer. <i>Algorithmic Learning in a Random World</i>. Springer, 2005.</li>
+<li>M. Sadinle, J. Lei, L. Wasserman. Least ambiguous set-valued classifiers with bounded error levels. <i>Journal of the American Statistical Association</i> 114(525):223–234, 2019.</li>
+<li>Y. Romano, E. Patterson, E. Candès. Conformalized quantile regression. <i>NeurIPS</i>, 2019.</li>
+<li>Backblaze. Hard Drive Data and Stats (drive-stats data, Q1 2024 – Q1 2025). backblaze.com/cloud-storage/resources/hard-drive-test-data, accessed 20 Oct 2026.</li>
+<li>Backblaze. Hard drive SMART stats. backblaze.com/blog/hard-drive-smart-stats (SMART 5, 187, 188, 197, 198 as failure indicators).</li>
+<li>A. Javanmardi, E. Hüllermeier. Conformal prediction intervals for remaining useful lifetime estimation. <i>International Journal of Prognostics and Health Management</i> 14(2), 2023.</li>
+<li>C. Robinson. Remaining useful life estimation for aircraft engines with risk-aware prediction intervals via conformalized quantile regression. <i>International Journal of Prognostics and Health Management</i> 17(1), 2026. doi:10.36001/ijphm.2026.v17i1.4724.</li>
+<li>T. Chen, C. Guestrin. XGBoost: a scalable tree boosting system. <i>Proc. KDD</i>, 2016.</li>
+<li>V. Vovk. Conditional validity of inductive conformal predictors. <i>Proc. Asian Conference on Machine Learning</i>, PMLR 25:475–490, 2012.</li>
+<li>S. Holm. A simple sequentially rejective multiple test procedure. <i>Scandinavian Journal of Statistics</i> 6:65–70, 1979.</li>
+</ol>
+</body>
+</html>

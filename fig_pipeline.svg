@@ -1,0 +1,25 @@
+<figure>
+<svg class="diagram" viewBox="0 0 680 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter, DejaVu Sans, sans-serif" font-size="10">
+<defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#52514e"/></marker></defs>
+<g stroke="#52514e" stroke-width="1" fill="#fff">
+<rect x="6" y="40" width="112" height="56" rx="5"/>
+<rect x="150" y="40" width="120" height="56" rx="5"/>
+<rect x="306" y="40" width="150" height="56" rx="5" fill="#f2f6fc" stroke="#1f5fbf" stroke-width="1.4"/>
+<rect x="492" y="22" width="180" height="40" rx="5" fill="#fbecea" stroke="#a12a1f"/>
+<rect x="492" y="76" width="180" height="40" rx="5" fill="#e9f4ee" stroke="#0b6b3a"/>
+<rect x="306" y="134" width="150" height="48" rx="5" stroke-dasharray="4 3"/>
+</g>
+<g fill="#0b0b0b" text-anchor="middle">
+<text x="62" y="62" font-weight="600">Sensor history</text><text x="62" y="77" fill="#52514e" font-size="9">engine cycles / drive days</text>
+<text x="210" y="62" font-weight="600">Model</text><text x="210" y="77" fill="#52514e" font-size="9">RUL ŷ or failure risk p</text>
+<text x="381" y="60" font-weight="600" fill="#1f5fbf">Guard threshold tα</text><text x="381" y="75" fill="#52514e" font-size="9">from n recorded failures:</text><text x="381" y="88" fill="#52514e" font-size="9">k-th of n, k = ⌈(n+1)(1−α)⌉</text>
+<text x="582" y="40" font-weight="600" fill="#a12a1f">ŷ ≤ tα : service now</text><text x="582" y="54" fill="#52514e" font-size="9">P(missing a failing unit) ≤ α</text>
+<text x="582" y="94" font-weight="600" fill="#0b6b3a">ŷ &gt; tα : keep running</text><text x="582" y="108" fill="#52514e" font-size="9">until next inspection (W)</text>
+<text x="381" y="154" font-weight="600">New fleet / new conditions</text><text x="381" y="170" fill="#52514e" font-size="9">recalibrate tα on k ≥ 1/α − 1 of its failures</text>
+</g>
+<g stroke="#52514e" stroke-width="1.1" fill="none" marker-end="url(#ar)">
+<path d="M118,68 H148"/><path d="M270,68 H304"/><path d="M456,60 L490,44"/><path d="M456,76 L490,94"/><path d="M381,132 V98"/>
+</g>
+</svg>
+<figcaption><b>Figure 1.</b> The guard. Any model that ranks units by how close they are to failure is turned into an alarm with a certified miss rate. The only extra input is a small set of past failures. When the fleet changes, the threshold (not the model) is recomputed from a few failures of the new fleet.</figcaption>
+</figure>

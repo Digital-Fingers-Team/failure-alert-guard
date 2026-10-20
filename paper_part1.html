@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Certified Failure Alerts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=block" rel="stylesheet">
+<style>
+@page { size: A4; margin: 20mm 19mm 20mm 19mm;
+  @bottom-center { content: counter(page); font-family: Inter, sans-serif; font-size: 8pt; color: #52514e; } }
+:root { --ink:#0b0b0b; --ink2:#52514e; --rule:#d9d8d3; --accent:#1f5fbf; --tint:#f2f6fc; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: "Source Serif 4", Georgia, serif; font-size: 10.4pt; line-height: 1.45;
+  color: var(--ink); background: #fff; margin: 0; hyphens: auto; text-align: justify; }
+h1, h2, h3, .sans, figcaption, table, .kw, .meta, .abstract-label { font-family: Inter, "DejaVu Sans", sans-serif; }
+h1 { font-size: 17pt; line-height: 1.22; text-align: center; margin: 0 0 6pt; font-weight: 700; letter-spacing: -0.01em; }
+.meta { text-align: center; font-size: 9pt; color: var(--ink2); margin-bottom: 12pt; }
+h2 { font-size: 11.5pt; margin: 15pt 0 5pt; font-weight: 700; break-after: avoid; }
+h3 { font-size: 10pt; margin: 10pt 0 3pt; font-weight: 600; break-after: avoid; }
+p { margin: 0 0 6pt; }
+.abstract { border-top: 1.2pt solid var(--ink); border-bottom: 0.6pt solid var(--rule); padding: 8pt 0 8pt; margin-bottom: 10pt; font-size: 9.8pt; }
+.abstract-label { font-weight: 700; font-size: 9pt; letter-spacing: .04em; text-transform: uppercase; }
+.kw { font-size: 8.6pt; color: var(--ink2); margin-top: 5pt; text-align: left; }
+figure { margin: 8pt 0 10pt; break-inside: avoid; text-align: center; }
+figure img { max-width: 100%; }
+figcaption { font-size: 8.4pt; color: var(--ink2); text-align: left; margin-top: 3pt; line-height: 1.35; }
+figcaption b { color: var(--ink); }
+table { border-collapse: collapse; width: 100%; font-size: 8.3pt; margin: 4pt 0 10pt; break-inside: avoid; text-align: left; }
+caption { caption-side: top; text-align: left; font-size: 8.4pt; color: var(--ink2); padding-bottom: 3pt; line-height: 1.35; }
+caption b { color: var(--ink); }
+th, td { padding: 2.4pt 4.5pt; border-bottom: 0.5pt solid var(--rule); vertical-align: top; }
+thead th { border-top: 1pt solid var(--ink); border-bottom: 0.8pt solid var(--ink); font-weight: 600; }
+tbody tr:last-child td { border-bottom: 1pt solid var(--ink); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.hl td { background: var(--tint); font-weight: 600; }
+.box { background: var(--tint); border-left: 2.5pt solid var(--accent); padding: 6pt 9pt; margin: 6pt 0 9pt; font-size: 9.6pt; break-inside: avoid; }
+code, .mono { font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 8.4pt; }
+ol.refs { font-size: 8.5pt; padding-left: 16pt; text-align: left; }
+ol.refs li { margin-bottom: 2.5pt; }
+.ok { color: #0b6b3a; font-weight: 600; } .no-ok { color: #a12a1f; font-weight: 600; } .part { color: #8a5a00; font-weight: 600; }
+ul, ol { margin: 0 0 6pt; padding-left: 15pt; } li { margin-bottom: 2pt; }
+.small { font-size: 8.6pt; color: var(--ink2); }
+.eq { text-align: center; margin: 5pt 0 7pt; font-size: 10.2pt; }
+.diagram { width: 100%; }
+</style>
+</head>
+<body>
+<h1>Low Error Is Not a Safe Alarm<br><span style="font-weight:500;font-size:12.5pt">Certified Miss-Rate Guarantees for Machine-Failure Alerts, Tested on Simulated Jet Engines and 343,944 Real Hard Drives</span></h1>
+<div class="meta">[Student name] · [School, City, Country] · ISEF category: Systems Software (SOFT) / Engineering Technology: Statics &amp; Dynamics (ETSD)</div>
+<!--ABSTRACT-->
+
+<h2>1. Introduction</h2>
+<p>Unexpected machine failures stop production lines, ground aircraft, and destroy data. Predictive maintenance tries to replace fixed service schedules with decisions based on sensor data: if a model can tell that a machine is close to failure, it can be serviced just in time, neither too early (wasting useful life) nor too late (an in-service failure) [4]. The standard research benchmark for this task is NASA's C-MAPSS turbofan simulation [1, 2], where a model predicts the <i>remaining useful life</i> (RUL) of an engine, in operating cycles, from its sensor history.</p>
+<p>Papers on C-MAPSS almost always report the average size of the error, as mean absolute error (MAE) or root-mean-squared error (RMSE). This project started the same way. Our first report compared Linear Regression, Random Forest and XGBoost on the FD001 sub-dataset and quoted a public benchmark in which Random Forest reached an MAE of 13.38 cycles [3]. We first <b>reproduced that benchmark on our own server</b> (Section 3), obtaining an MAE of 13.39 cycles. But reproducing it raised the question this paper is about:</p>
+<div class="box"><b>Does a low average error make a safe maintenance alarm?</b> A maintenance team does not act on an average. At each inspection it decides, machine by machine, whether to service now or wait until the next inspection. The error that matters is a machine that fails before the next inspection because the model said it was fine. We call this a <i>miss</i>.</div>
+<p>We show that the answer is no. A model with a competitive RMSE, alerting when its predicted RUL falls below the inspection interval, misses a large share of the engines that are about to fail, and far more when the fleet changes (new operating conditions or a new fault mode). We then build and test an alert rule, the <b>guard</b>, that turns any RUL or risk model into an alarm with a <b>certified miss rate</b>. The user chooses the acceptable miss rate α (for example 10%), and a short calculation on a small set of past failures sets the alert threshold so that, under a stated assumption, at most a fraction α of failing machines are missed. The method comes from conformal prediction [5–8]. Our contribution is to apply it to the right quantity (misses among machines that are about to fail, not average coverage), to measure what it costs in false alarms, to show when the guarantee breaks, and to show how many real failures are needed to repair it.</p>
+<p>Because the original report's main limitation was that C-MAPSS is simulated, we also test everything on a <b>real fleet</b>: daily SMART sensor records from 343,944 hard drives operated by Backblaze in 2024–2025 [9], including 5,730 real failures. All hypotheses, settings and analysis code were pre-registered (frozen with SHA-256 hashes) before the test data were evaluated.</p>
+<p><b>Contributions.</b> (1) An independent reproduction of the public FD001 benchmark. (2) Evidence that RUL error metrics hide unsafe alarms, in-fleet and across fleets. (3) The guard: a distribution-free alert rule with a finite-sample miss-rate guarantee, plus a minimum-data rule and a prediction of how much the realised miss rate varies. (4) A budget mode that tells an operator what catch rate a fixed inspection budget certifies. (5) A pre-registered evaluation on 4 simulated fleets, 12 cross-fleet transfers, and a real drive fleet tested three months into the future and on unseen manufacturers.</p>
+
+<h2>2. Background</h2>
+<h3>2.1 NASA C-MAPSS</h3>
+<p>C-MAPSS simulates turbofan engines that start with unknown wear and degrade until failure [1]. It has four sub-datasets (Table 1). Each row is one engine at one cycle: three operating settings and 21 sensor readings. Training engines run until failure, so their RUL at every cycle is known. Test engines stop at a random point before failure, and the true RUL at that point is provided separately. FD002 and FD004 mix six operating conditions; FD003 and FD004 contain two fault modes (high-pressure compressor and fan degradation).</p>
+<table><caption><b>Table 1.</b> C-MAPSS sub-datasets [1, 2]. "At risk" = official test engines whose true RUL is ≤ 30 cycles.</caption>
+<thead><tr><th>Fleet</th><th>Conditions</th><th>Fault modes</th><th class="n">Train engines</th><th class="n">Test engines</th><th class="n">At risk (test)</th></tr></thead>
+<tbody><!--TABLE_FLEETS--></tbody></table>
+<h3>2.2 Backblaze hard-drive data</h3>
+<p>Backblaze publishes one record per drive per day for every drive in its data centres: model, capacity, a failure flag, and SMART (Self-Monitoring, Analysis and Reporting Technology) attributes such as reallocated sectors (SMART 5) or uncorrectable errors (SMART 187) [9]. A drive "fails" when it is removed because it stopped working or was about to. We used January 2024 to March 2025 (456 days, about 125 million drive-days). The industry rule of thumb used by Backblaze itself flags a drive when any of SMART 5, 187, 188, 197 or 198 is above zero [10]; we use it as a real-world baseline.</p>
+<h3>2.3 Conformal prediction</h3>
+<p>Conformal prediction is a family of methods that wrap any model and give guarantees that hold for finite samples and need no assumption about the data distribution other than <i>exchangeability</i> (the calibration examples and the new example are like random draws from the same population, in any order) [5, 6]. The usual version gives a prediction interval that contains the truth with probability at least 1 − α, averaged over all examples. Variants that hold separately within each class are called label-conditional or Mondrian [6, 7]. Conformalized quantile regression (CQR) [8] is a strong recent variant that adapts the interval width to each input. Conformal prediction intervals for RUL on C-MAPSS were introduced in [11]. Robinson [12] made them asymmetric, spending more of the error budget on over-estimates because late maintenance is the costlier mistake; this is the closest work to ours. Both guarantee coverage averaged over all prediction points. What we add is: (i) the guarantee is placed directly on the decision that matters, the misses among units that are about to fail; (ii) its false-alarm cost is measured against those interval methods; (iii) it is tested across fleets and on a real fleet, with a rule for how many failures are needed to recalibrate.</p>
+
+<h2>3. Reproducing the public benchmark</h2>
+<p>The original report quoted MAE and RMSE values for three models on FD001 from a public repository [3] and correctly warned that they were not the team's results. We re-ran the experiment from the official NASA files. Following common practice we capped the training target at 125 cycles (an engine early in life shows no measurable wear, so its exact RUL cannot be predicted), dropped seven sensors that are constant in FD001, and scored the prediction at the last cycle of each of the 100 official test engines against the true RUL.</p>
+<table><caption><b>Table 2.</b> FD001 official test set: public benchmark [3] versus our reproduction (<code>run_fd001.py</code>). Without the 125-cycle cap the errors roughly double (MAE 23.6–25.5), a detail the original report did not mention.</caption>
+<thead><tr><th>Model</th><th class="n">MAE [3]</th><th class="n">MAE (ours)</th><th class="n">RMSE [3]</th><th class="n">RMSE (ours)</th><th class="n">R² (ours)</th></tr></thead>
+<tbody>
+<tr><td>Linear Regression</td><td class="n">17.64</td><td class="n">17.62</td><td class="n">22.01</td><td class="n">21.90</td><td class="n">0.722</td></tr>
+<tr><td>Random Forest</td><td class="n">13.38</td><td class="n">13.39</td><td class="n">18.13</td><td class="n">18.28</td><td class="n">0.806</td></tr>
+<tr><td>XGBoost</td><td class="n">13.43</td><td class="n">13.17</td><td class="n">18.46</td><td class="n">18.17</td><td class="n">0.809</td></tr>
+</tbody></table>
+<p>The reproduction matches to within 0.3 cycles, so the reported numbers are credible. However, in the same Random Forest run, 57 of the 100 test predictions were too <i>late</i> (predicted RUL above the true RUL), which is the dangerous direction. The rest of this paper studies that direction directly.</p>
+
+<h2>4. Methods</h2>
+<!--FIG_PIPELINE-->
+<h3>4.1 From RUL prediction to an alarm</h3>
+<p>We model a fleet that is inspected every <i>W</i> time units (cycles for engines, days for drives). At an inspection, a unit is <b>at risk</b> if its true RUL ≤ <i>W</i>: if it is not serviced now, it will fail before the next inspection. An <b>alert rule</b> maps the model's output for a unit to "service now" or "wait". Two error rates matter:</p>
+<ul><li><b>Miss rate</b> = share of at-risk units that got no alert (in-service failures). This is the safety metric.</li>
+<li><b>False-alarm rate</b> = share of units that are not at risk but got an alert (wasted inspections). This is the cost metric.</li></ul>
+<p>The primary setting is <i>W</i> = 30 and target miss rate α = 0.10; <i>W</i> ∈ {20, 30, 50} cycles (C-MAPSS) or {7, 30} days (Backblaze), and α ∈ {0.05, 0.10, 0.20} are reported as secondary.</p>
+
+<h3>4.2 Models</h3>
+<p><b>C-MAPSS.</b> Sensors are standardised within each operating condition (conditions found by <i>k</i>-means on the three settings), using statistics from the fleet's own data but never its failure labels, so the same step is possible for a newly deployed fleet. Features are the 14 informative sensors, their 10-cycle rolling mean and 20-cycle rolling slope, and the cycle count (43 features). The point model is XGBoost regression [13] on the RUL capped at 125. A second XGBoost model with the quantile loss gives a lower quantile for CQR.</p>
+<p><b>Backblaze.</b> For each drive and day we use 23 SMART raw values, plus the 7-day and 30-day change of the 13 error counters, plus capacity (50 features). The model is an XGBoost classifier for "fails within <i>W</i> days". The drive model name was deliberately left out, so the model can be applied to an unseen manufacturer. In development, adding it did not reduce the false-alarm cost.</p>
+
+<h3>4.3 Alert rules compared</h3>
+<table><caption><b>Table 3.</b> Alert rules. ŷ = predicted RUL; for Backblaze, alerts trigger when the predicted failure probability is high, and the rules are mirrored.</caption>
+<thead><tr><th>Rule</th><th>Alert when</th><th>Origin</th></tr></thead>
+<tbody>
+<tr><td>Point</td><td>ŷ ≤ <i>W</i></td><td>The natural use of a RUL model</td></tr>
+<tr><td>Margin</td><td>ŷ ≤ <i>W</i> + RMSE<sub>cal</sub></td><td>Engineering "safety margin"</td></tr>
+<tr><td>Conformal lower bound</td><td>ŷ − <i>q</i> ≤ <i>W</i>, <i>q</i> = conformal quantile of (ŷ − <i>y</i>)</td><td>Standard split conformal, one-sided [5]</td></tr>
+<tr><td>CQR lower bound</td><td>ŷ<sub>α</sub> − <i>e</i> ≤ <i>W</i></td><td>Conformalized quantile regression [8]</td></tr>
+<tr class="hl"><td>Guard (ours)</td><td>ŷ ≤ <i>t</i><sub>α</sub>, threshold from at-risk calibration units</td><td>Label-conditional conformal [6, 7] on misses</td></tr>
+<tr><td>SMART rule (drives)</td><td>any of SMART 5/187/188/197/198 &gt; 0</td><td>Industry practice [10]</td></tr>
+<tr><td>Default / F1-optimal (drives)</td><td>p ≥ 0.5, or p ≥ threshold maximising F1 on calibration</td><td>Common ML practice</td></tr>
+</tbody></table>
+
+<h3>4.4 The guard and its guarantee</h3>
+<p>Take <i>n</i> calibration units that were observed while at risk (one snapshot per unit, drawn uniformly from its last <i>W</i> time units before failure) and compute the model's score for each: <i>s</i><sub>1</sub>, …, <i>s</i><sub><i>n</i></sub>. Sort them and set</p>
+<p class="eq"><i>k</i> = ⌈(<i>n</i> + 1)(1 − α)⌉,&nbsp;&nbsp;&nbsp; <i>t</i><sub>α</sub> = <i>s</i><sub>(<i>k</i>)</sub> (the <i>k</i>-th smallest),&nbsp;&nbsp;&nbsp; alert iff ŷ ≤ <i>t</i><sub>α</sub>.</p>
+<div class="box"><b>Guarantee.</b> If a new at-risk unit is exchangeable with the <i>n</i> calibration units, then P(miss) = P(<i>s</i><sub>new</sub> &gt; <i>t</i><sub>α</sub>) ≤ α. <i>Proof sketch:</i> by exchangeability the rank of <i>s</i><sub>new</sub> among all <i>n</i> + 1 scores is uniform on {1, …, <i>n</i> + 1}; a miss requires rank &gt; <i>k</i>, which has probability (<i>n</i> + 1 − <i>k</i>)/(<i>n</i> + 1) ≤ α. With no ties the miss rate is also at least α − 1/(<i>n</i> + 1), so the guard is not wastefully cautious [5, 6].</div>
+<p>Three practical consequences follow and are tested below:</p>
+<ol><li><b>Minimum data.</b> If <i>k</i> &gt; <i>n</i> no threshold exists and the only safe rule is "always alert". A 90% guarantee needs at least <i>n</i> = ⌈1/α⌉ − 1 = 9 recorded failures, and a 95% guarantee needs 19.</li>
+<li><b>Spread.</b> The guarantee holds on average over calibration sets. For one particular calibration set, the realised miss rate follows a Beta(<i>n</i> + 1 − <i>k</i>, <i>k</i>) distribution [14], so small calibration sets give noisy (sometimes worse than α) results even when the guarantee holds.</li>
+<li><b>Why not the usual conformal bound?</b> The standard lower bound guarantees coverage averaged over <i>all</i> units, most of which are healthy and far from failure. Nothing controls its error on the at-risk units specifically: it can be far too cautious (many false alarms) or not cautious enough. The guard spends its whole error budget on the units that matter.</li></ol>
+<p><b>Budget mode (drives).</b> An operator may instead have a fixed inspection budget, for example 1% of healthy drives per month. The threshold is then the 99th percentile of calibration scores of healthy drives, and the guard's argument run in reverse gives a <b>certificate</b>: if <i>m</i> of the <i>n</i> calibration failures fall below the threshold, the expected miss rate is at most (<i>m</i> + 1)/(<i>n</i> + 1).</p>
+<p><b>Recalibration under fleet change.</b> Exchangeability fails when the new fleet differs from the calibration fleet. The fix we test is simple: keep the model, but recompute <i>t</i><sub>α</sub> from <i>k</i> failures recorded in the new fleet (<i>k</i> ∈ {5, 10, 20, 40} engines; {10, 20, 40, 80} drives).</p>
+
+<h3>4.5 Experimental design</h3>
+<p><b>Development</b> (all choices of features, models and settings) used only the C-MAPSS <i>training</i> files, split by engine into fit / calibration / evaluation (50/25/25%, 30 repetitions), and only the first half of 2024 (P1) of the drive data. <b>Confirmatory tests</b> were run once, after freezing:</p>
+<ul><li><b>C-MAPSS, same fleet:</b> model fitted on 70% of a fleet's training engines and calibrated on the other 30%; evaluated on the official test engines (last observed cycle). Repeated 50 times with different splits.</li>
+<li><b>C-MAPSS, cross-fleet:</b> the same model applied to each of the other three fleets' official test engines (12 transfers), with the source calibration, and recalibrated with <i>k</i> failures from the target fleet's training file.</li>
+<li><b>Backblaze, future:</b> fitted on P1 (Jan–Jun 2024), calibrated on P2 (Jul–Sep 2024), evaluated on P3 (Oct–Dec 2024), with labels looking up to 30 days ahead into 2025. Five model seeds.</li>
+<li><b>Backblaze, unseen manufacturer:</b> each of Seagate, HGST, Toshiba and WDC in turn is removed from fitting and calibration and evaluated on its P3 drives, with and without recalibration on <i>k</i> of its P2 failures.</li></ul>
+<p>The engine or drive is the independent unit everywhere: one snapshot per unit, no unit in two roles, and confidence intervals from a 10,000-draw bootstrap over units (stratified by fleet), with each unit's outcome averaged over repetitions. Eight hypotheses (Table 4) were fixed in <code>prereg.json</code> together with SHA-256 hashes of all code and data before any confirmatory run. A hypothesis is <b>supported</b> only if its 95% CI criterion is met <i>and</i> its one-sided bootstrap p-value survives Holm correction across all eight. Non-inferiority claims use a margin of 0.05 (the miss rate's upper 95% bound must be ≤ 0.15 when α = 0.10).</p>
+<p class="small"><b>Disclosure.</b> Before freezing, the official FD001 test set was used for the benchmark reproduction (Section 3), and the FD001 and FD003 test sets were used once in a pilot with a different model and features. No settings were tuned on them afterwards. The software is Python 3.11, scikit-learn 1.9.1, XGBoost 3.2.0, pandas 3.0.6 and DuckDB 1.5.6, run on a 2-core ARM cloud server. Code: [repository URL].</p>
