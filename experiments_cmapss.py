@@ -20,6 +20,7 @@ FLEETS = ["FD001", "FD002", "FD003", "FD004"]
 WINDOWS = [20, 30, 50]
 ALPHAS = [0.05, 0.10, 0.20]
 KS = [5, 10, 20, 40]
+PRIMARY_W, PRIMARY_A = 30, 0.10   # pre-registered primary configuration
 XGB = dict(n_estimators=300, max_depth=4, learning_rate=0.05, subsample=0.8,
            colsample_bytree=0.8, n_jobs=2, tree_method="hist")
 
@@ -53,7 +54,7 @@ def run(mode, reps, out):
         tr, te = load_fleet(fd)
         data[fd] = (tr, features(tr), te, features(te))
         print("loaded", fd, len(tr), len(te), flush=True)
-    rows, t0 = [], time.time()
+    rows, units, t0 = [], [], time.time()
     for rep in range(reps):
         for src in FLEETS:
             rng = np.random.default_rng(10_000 * (mode == "test") + 100 * rep + FLEETS.index(src))
@@ -99,7 +100,12 @@ def run(mode, reps, out):
                                 t = guard_threshold(point.predict(tXtr.loc[s.index]), a)
                                 R[f"recal{k}"] = (lambda t: lambda X: point.predict(X) <= t)(t)
                         for name, f in R.items():
-                            mr = alert_metrics(risk_y, f(risk_X), W)
+                            al = f(risk_X)
+                            if mode == "test" and W == PRIMARY_W and a == PRIMARY_A:
+                                units.append(pd.DataFrame(dict(rep=rep, src=src, tgt=tgt, method=name,
+                                                               unit=ev_sets[W].unit.values, rul=risk_y,
+                                                               alert=al.astype(int))))
+                            mr = alert_metrics(risk_y, al, W)
                             mu = alert_metrics(uni_y, f(uni_X), W)
                             rows.append(dict(mode=mode, rep=rep, src=src, tgt=tgt, W=W, alpha=a,
                                             method=name, n_risk=mr["n_risk"],
@@ -108,6 +114,8 @@ def run(mode, reps, out):
                                             false_alarms=round(mu["false_alarm"] * (mu["n"] - mu["n_risk"]))))
             print(f"rep {rep} {src} done {time.time() - t0:.0f}s", flush=True)
         pd.DataFrame(rows).to_csv(out, index=False)
+        if units:
+            pd.concat(units).to_parquet(out.replace(".csv", "_units.parquet"), index=False)
 
 
 if __name__ == "__main__":

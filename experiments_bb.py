@@ -15,6 +15,7 @@ from common import guard_threshold
 
 ALPHAS = [0.05, 0.10, 0.20]
 KS = [10, 20, 40, 80]
+BUDGETS = [0.01, 0.05]
 SMART_RULE = ["smart_5_raw", "smart_187_raw", "smart_188_raw", "smart_197_raw", "smart_198_raw"]
 XGB = dict(n_estimators=300, max_depth=5, learning_rate=0.05, subsample=0.8,
            colsample_bytree=0.8, n_jobs=2, tree_method="hist", eval_metric="logloss")
@@ -60,6 +61,13 @@ def thresholds(model, cal, feats, W):
     T = {"default_0.5": 0.5, "f1_opt": bt}
     for a in ALPHAS:
         T[f"guard_{a}"] = guard_t(model, cr, feats, a)
+    # budget mode: threshold set by the share of healthy drives the operator can inspect;
+    # certificate = conformal bound (m + 1) / (n + 1) on the miss rate from calibration failures
+    sr = model.predict_proba(cr[feats])[:, 1]
+    for b in BUDGETS:
+        t = float(np.quantile(p[y == 0], 1 - b))
+        T[f"budget_{b}"] = t
+        CERT[f"budget_{b}"] = ((sr < t).sum() + 1) / (len(sr) + 1)
     return T
 
 
@@ -70,16 +78,23 @@ def evaluate(model, T, ev, feats, W, extra):
     out = []
     rule_r = (er[SMART_RULE].fillna(0) > 0).any(axis=1).values
     rule_u = (eu[SMART_RULE].fillna(0) > 0).any(axis=1).values
-    out.append(dict(extra, W=W, method="smart_rule", n_risk=len(er), misses=int((~rule_r).sum()),
-                    n_safe=len(eu), false_alarms=int(rule_u.sum())))
+    alerts = {"smart_rule": (rule_r, rule_u)}
     for name, t in T.items():
-        out.append(dict(extra, W=W, method=name, n_risk=len(er), misses=int((pr < t).sum()),
-                        n_safe=len(eu), false_alarms=int((pu >= t).sum())))
+        alerts[name] = (pr >= t, pu >= t)
+    for name, (ar, au) in alerts.items():
+        out.append(dict(extra, W=W, method=name, n_risk=len(er), misses=int((~ar).sum()),
+                        n_safe=len(eu), false_alarms=int(au.sum()), cert=CERT.pop(name, np.nan)))
+        if extra["mode"] == "test" and W == 30 and not name.endswith(("0.05", "0.2")):
+            UNITS.append(pd.DataFrame(dict(extra, method=name, serial=er.serial.values, alert=ar.astype(int))))
     return out
 
 
+UNITS = []   # per-drive outcomes for at-risk test drives, primary W = 30
+CERT = {}    # budget-mode miss-rate certificates from the latest thresholds() call
+
+
 def split_serials(df, fracs, rng):
-    u = df.serial.unique(); rng.shuffle(u)
+    u = np.array(sorted(df.serial.unique())); rng.shuffle(u)
     cuts = np.cumsum([int(round(f * len(u))) for f in fracs[:-1]])
     return [set(x) for x in np.split(u, cuts)]
 
@@ -128,6 +143,8 @@ def run(mode, reps, out):
                 rows += recal_rows(mh, pool, tev, feats, W, rng, ex)
             print(f"rep {rep} W={W} {time.time() - t0:.0f}s", flush=True)
         pd.DataFrame(rows).to_csv(out, index=False)
+        if UNITS:
+            pd.concat(UNITS).to_parquet(out.replace(".csv", "_units.parquet"), index=False)
 
 
 if __name__ == "__main__":
