@@ -1,0 +1,119 @@
+[
+ {
+  "id": "H1",
+  "claim": "C-MAPSS in-fleet: point-alert miss rate > alpha",
+  "estimate": 0.1294,
+  "ci95": [
+   0.085,
+   0.1767
+  ],
+  "p_one_sided": 0.1047,
+  "supported_ci": false,
+  "p_holm": 0.1047,
+  "supported": false
+ },
+ {
+  "id": "H2",
+  "claim": "C-MAPSS in-fleet: guard miss rate <= alpha + margin",
+  "estimate": 0.079,
+  "ci95": [
+   0.0488,
+   0.113
+  ],
+  "p_one_sided": 0.0,
+  "supported_ci": true,
+  "p_holm": 0.0,
+  "supported": true
+ },
+ {
+  "id": "H3a",
+  "claim": "C-MAPSS in-fleet: guard false-alarm rate < conformal_lb",
+  "estimate": -0.1003,
+  "ci95": [
+   -0.1213,
+   -0.0798
+  ],
+  "p_one_sided": 0.0,
+  "supported_ci": true,
+  "p_holm": 0.0,
+  "supported": true
+ },
+ {
+  "id": "H3b",
+  "claim": "C-MAPSS in-fleet: guard false-alarm rate < cqr_lb",
+  "estimate": -0.0557,
+  "ci95": [
+   -0.0709,
+   -0.0419
+  ],
+  "p_one_sided": 0.0,
+  "supported_ci": true,
+  "p_holm": 0.0,
+  "supported": true
+ },
+ {
+  "id": "H4",
+  "claim": "C-MAPSS cross-fleet: source-calibrated guard miss > alpha",
+  "estimate": 0.2709,
+  "ci95": [
+   0.226,
+   0.3159
+  ],
+  "p_one_sided": 0.0,
+  "supported_ci": true,
+  "p_holm": 0.0,
+  "supported": true
+ },
+ {
+  "id": "H5",
+  "claim": "C-MAPSS cross-fleet: guard recalibrated on 20 target failures, miss <= alpha + margin",
+  "estimate": 0.1001,
+  "ci95": [
+   0.0712,
+   0.1327
+  ],
+  "p_one_sided": 0.0022,
+  "supported_ci": true,
+  "p_holm": 0.0044,
+  "supported": true
+ },
+ {
+  "id": "H6",
+  "claim": "Backblaze, 3 months later: SMART-rule miss rate > alpha",
+  "estimate": 0.2558,
+  "ci95": [
+   0.2296,
+   0.2831
+  ],
+  "p_one_sided": 0.0,
+  "supported_ci": true,
+  "p_holm": 0.0,
+  "supported": true
+ },
+ {
+  "id": "H7",
+  "claim": "Backblaze, 3 months later: guard miss rate <= alpha + margin",
+  "estimate": 0.0745,
+  "ci95": [
+   0.0599,
+   0.0903
+  ],
+  "p_one_sided": 0.0,
+  "supported_ci": true,
+  "p_holm": 0.0,
+  "supported": true
+ },
+ {
+  "id": "H8",
+  "claim": "Backblaze, unseen manufacturer: guard recalibrated on 20 failures, miss <= alpha + margin",
+  "estimate": 0.0834,
+  "ci95": [
+   0.0708,
+   0.0967
+  ],
+  "p_one_sided": 0.0,
+  "supported_ci": true,
+  "p_holm": 0.0,
+  "supported": true
+ }
+]

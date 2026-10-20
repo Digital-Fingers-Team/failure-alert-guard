@@ -4,3 +4,4 @@ logs/
 __pycache__/
 .pytest_cache/
 *.part
+results/*_units.parquet
