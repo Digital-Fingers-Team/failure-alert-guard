@@ -1,0 +1,57 @@
+{
+ "frozen_utc": "2026-10-20T08:58:16+00:00",
+ "primary": {
+  "W": 30,
+  "alpha": 0.1,
+  "non_inferiority_margin": 0.05,
+  "bootstrap": "10,000 draws over engines/drives, stratified by fleet/target",
+  "multiplicity": "Holm across H1-H8, one-sided bootstrap p-values",
+  "supported_if": "95% CI criterion met AND Holm p < 0.05"
+ },
+ "runs": [
+  "python experiments_cmapss.py test 50 results/test_cmapss.csv",
+  "python experiments_bb.py test 5 results/test_bb.csv",
+  "python analyze.py"
+ ],
+ "hypotheses": {
+  "H1": "C-MAPSS, same fleet, official test units: point alerts (predicted RUL <= W) miss more than alpha of at-risk engines (CI lower > 0.10).",
+  "H2": "C-MAPSS, same fleet: the guard misses at most alpha + margin (CI upper <= 0.15).",
+  "H3a": "C-MAPSS, same fleet: guard false-alarm rate is lower than the split-conformal lower bound's (CI upper of difference < 0).",
+  "H3b": "C-MAPSS, same fleet: guard false-alarm rate is lower than conformalized quantile regression's (CI upper of difference < 0).",
+  "H4": "C-MAPSS, 12 cross-fleet transfers: the source-calibrated guard misses more than alpha (CI lower > 0.10).",
+  "H5": "C-MAPSS, cross-fleet: the guard re-calibrated on 20 target-fleet failures misses at most alpha + margin (CI upper <= 0.15).",
+  "H6": "Backblaze, P3 (3 months after calibration): the SMART-rule (any of SMART 5/187/188/197/198 raw > 0) misses more than alpha (CI lower > 0.10).",
+  "H7": "Backblaze, P3: the guard (fit P1, calibrated P2) misses at most alpha + margin (CI upper <= 0.15).",
+  "H8": "Backblaze, manufacturer held out of fitting and calibration: the guard re-calibrated on 20 of its P2 failures misses at most alpha + margin on its P3 drives (CI upper <= 0.15)."
+ },
+ "exploratory": [
+  "all W in {20,30,50} / {7,30} and alpha in {0.05,0.1,0.2}; recalibration with k in {5,10,20,40} / {10,20,40,80}",
+  "false-alarm cost of every method; Backblaze catch rate at 1% / 5% inspection budgets and whether the calibration certificate (m+1)/(n+1) holds in P3",
+  "Beta(n+1-k, k) prediction of the spread of realised miss rates after recalibration"
+ ],
+ "disclosures": [
+  "Before freezing, the official FD001 test set was used to replicate the public benchmark (run_fd001.py), and FD001/FD003 test sets were used once in pilot_conformal.py (Random Forest, different features). All method and parameter choices were then made on training-file splits (dev mode) only.",
+  "Backblaze development used P1 (Jan-Jun 2024) only; P2/P3 outcomes were not examined before freezing."
+ ],
+ "sha256": {
+  "common.py": "dcbd59fde87010f0bbcabe588236602464e91d7b24a034f3b88cb041bef53a44",
+  "experiments_cmapss.py": "43e777e9fa1045a851a27ab5f6d66a4005a587fea1cdb24d7397e08a04fb63d7",
+  "experiments_bb.py": "6479280658b3585130e648403e608770293cf0a10dab6f8f690ae9e22b2f259d",
+  "analyze.py": "d1f34490da0ece84fe9d14333970c885aa6aeb4a816d8c17fc68d58a63f9a3e8",
+  "fetch_backblaze.py": "bc09e49873dcb4689ba7dabf7e69a8c25e690aed2f6ffc819de6142f1dbbb8f7",
+  "prep_backblaze.py": "25d28269ecd4a21feea84473c12afb9874d5d4bf8a3a93e7ce66fbbb83d15f88",
+  "data/cmapss/RUL_FD001.txt": "a19c8ec94931949d0485bdc35118206e9c81c4547b422efb9cf86f4ceddbceca",
+  "data/cmapss/RUL_FD002.txt": "c851dd96a6ea6998d3c4a8f834d3c8013aa90e93a6ed950dc826ad0655b2906b",
+  "data/cmapss/RUL_FD003.txt": "df1e0566306b174a2de41c67a3e7a51877889598b78643fc3e5685259091b7cb",
+  "data/cmapss/RUL_FD004.txt": "196b836b85a95ac7fdbbf29c5fdf1657382eafa445644d114ffaaf50dc2975e1",
+  "data/cmapss/test_FD001.txt": "3cda7109ce17bafb5443f2ac926cfcf88154b941b8c4cf95eb55d1ddd6f52851",
+  "data/cmapss/test_FD002.txt": "de7b5bf7e998a985c378488480528b7c02cff1406a46740def362dda8d9b4e02",
+  "data/cmapss/test_FD003.txt": "299babd63c8d987cef079c4a425429f33b3a34797d803bbe2ad48c29dbd0d790",
+  "data/cmapss/test_FD004.txt": "1dc675fff0624bac10786927c6715b37d1297657137400d2b1a3138d777a3ba5",
+  "data/cmapss/train_FD001.txt": "963b5e22825b34d8b21c69e1aeb4af3e647050eb672ee8834ba4b5d91d2de0f8",
+  "data/cmapss/train_FD002.txt": "dac6c4dbc4e7c1bdeb5747da3d313d05c395bb99801b44a002b26a2ba13d788f",
+  "data/cmapss/train_FD003.txt": "2abbe9968cc5e8eb091980f51b20f62bb4127336d3482cb52071d53bf23329e2",
+  "data/cmapss/train_FD004.txt": "27ef6160b6a1dcb2613a88de9c239f763b223f02cdc41dc5cdedc5dc189b6218",
+  "data/bb/snapshots.parquet": "bbcca34dc10b48e6356b2c5bb5d5914c661c130b7dfee5b055b6c8fd919701a2"
+ }
+}
